@@ -24,11 +24,12 @@
 
     <div class="container">
       <div class="offset-md-1 col-md-10">
+        @include('static_pages._messages')
         @yield('content')
         @include('static_pages._footer')
       </div>
     </div>
 
-
+    <script src="{{ mix('js/app.js') }}"></script>  <!--教材7.3用户登录添加-->
   </body>
 </html>

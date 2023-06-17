@@ -2,8 +2,11 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+
+
+use Illuminate\Database\Eloquent\Model;     //教材8.4节添加
 
 class DatabaseSeeder extends Seeder
 {
@@ -18,5 +21,11 @@ class DatabaseSeeder extends Seeder
         //     'name' => 'Test User',
         //     'email' => 'test@example.com',
         // ]);
+
+        Model::unguard();
+
+        $this->call(UsersTableSeeder::class);
+
+        Model::reguard();
     }
 }
