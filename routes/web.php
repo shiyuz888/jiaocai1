@@ -61,3 +61,14 @@ Route::delete('/logout', 'SessionsController@destroy')->name('logout');
 // ↑有两个路由的命名完全一致，但由于我们在表单中清楚的指明了使用 POST 动作来提交用户的登录信息，因此 Laravel 会自动将该请求映射到会话控制器的 store 动作上。————我自己做的话我会分开命名的
 
 
+
+Route::get('/users/create/confirm/{token}', 'UsersController@confirm_email')->name('confirm_email');
+
+
+
+
+
+Route::get('password/reset',  'PasswordController@resetRequestPage')->name('resetRequestPage');
+Route::post('password/email',  'PasswordController@sendVerifyLinkEmail')->name('sendVerifyLinkEmail');
+Route::get('password/reset/{token}',  'PasswordController@resetPwdForm')->name('resetPwdForm');
+Route::post('password/reset',  'PasswordController@updateNewPwd')->name('updateNewPwd');

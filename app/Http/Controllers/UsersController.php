@@ -7,19 +7,25 @@ use Illuminate\Http\Request;
 
 use App\Models\User;    //需要添加
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Mail;
 
 class UsersController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth', [
-            'except' => ['show', 'create', 'store', 'index']     //除了show、create、store方法可以访问之外，未登录者不允许访问本控制器的其他方法，即除了特例之外，所有方法只能由已登录者访问
+            'except' => ['show', 'create', 'store', 'index', 'confirm_email']     //除了show、create、store、index、confirm_email方法可以访问之外，未登录者不允许访问本控制器的其他方法，即除了特例之外，所有方法只能由已登录者访问
         ]);
 
 
         $this->middleware('guest', [
             'only' => ['create']        //只有guest才能访问create方法，那么就相当于已登录的auth不能访问注册功能
+        ]);
+
+
+        // 注册限流 一个小时内只能提交 10 次请求； 要哪个方法限流就写哪个方法进去，但我好奇的是它是针对同一个IP吗？
+        $this->middleware('throttle:10,60', [
+            'only' => ['store']
         ]);
     }
     //中括号里的方法名 同 函数名，如果你的注册方法叫signup，那么你就要在中括号里写signup，而不是create
@@ -47,12 +53,51 @@ class UsersController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
+
+        //下面这段本来是注册就可以登录，现在改为注册后要先激活，所以下面这段就改到了confirm_email方法里去了
+        /*
         Auth::login($user); //这行是若新注册成功则自动会进入已登录状态，表现为导航栏的菜单自动变更（需要添加use Illuminate\Support\Facades\Auth; ）
         session()->flash('success', '欢迎，您将在这里开启一段新的旅程~');
         return redirect()->route('users.show', [$user]);
         // 上面这行等价于 return redirect()->route('users.show', [$user->id]); 因为此时 $user 是 User 模型对象的实例。route() 方法会自动获取 Model 的主键，也就是数据表 users 的主键 id ，这里是一个『约定优于配置』的体现
+        */
+
+        //本来是注册了就进入上方login，即直接可登录，现在改为下方这段，注册了会先发邮件同时返回主页 —— 用户收到邮件点击超链接回来之后的验证登录动作交给confirm_email方法了
+        $this->sendEmailConfirmationTo($user);
+        session()->flash('success', '验证邮件已发送到你的注册邮箱上，请注意查收。');
+        return redirect('/');
+        //至此发邮件的动作就交给了下方↓↓↓的sendEmailConfirmationTo方法
     }
 
+    protected function sendEmailConfirmationTo($user)
+    {
+        $view = 'emails.activation-confirm';   //这是指定使用的哪个视图
+        $data = compact('user');
+        // $from = 'summer@example.com';
+        // $name = 'Summer';
+        $to = $user->email;
+        $subject = "感谢注册 Weibo 应用！请确认你的邮箱。";
+
+        // Mail::send($view, $data, function ($message) use ($from, $name, $to, $subject) {     //env里设置好了from和name就不需要它们了，除非你想邮件中用别的抬头
+        //     $message->from($from, $name)->to($to)->subject($subject);
+        Mail::send($view, $data, function ($message) use ($to, $subject) {
+            $message->to($to)->subject($subject);
+        });
+    }
+
+    public function confirm_email($token)
+    {
+        $user = User::where('activation_token', $token)->firstOrFail();
+
+        $user->activated = true;
+        $user->activation_token = null;
+        $user->save();
+
+        Auth::login($user);
+        session()->flash('success', '恭喜你，激活成功！');
+        return redirect()->route('users.show', [$user]);
+    }
+    //上方store方法+send...方法+confirm_email方法组成了 注册时即发送邮件，用户收到邮件后点链接回来之后就激活账户的动作
 
 
 
