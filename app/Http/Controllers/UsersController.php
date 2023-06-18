@@ -11,6 +11,21 @@ use Illuminate\Support\Facades\Auth;
 
 class UsersController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth', [
+            'except' => ['show', 'create', 'store', 'index']     //除了show、create、store方法可以访问之外，未登录者不允许访问本控制器的其他方法，即除了特例之外，所有方法只能由已登录者访问
+        ]);
+
+
+        $this->middleware('guest', [
+            'only' => ['create']        //只有guest才能访问create方法，那么就相当于已登录的auth不能访问注册功能
+        ]);
+    }
+    //中括号里的方法名 同 函数名，如果你的注册方法叫signup，那么你就要在中括号里写signup，而不是create
+
+
+
     public function create()
     {
         return view('users.signup');    //这里我没有用教材的users.create → 只是想展示一下view()括号里的内部视图路径名并不需要跟路由里的外部URL 即第一个参数同名，也不需要跟路由的name代号同名
@@ -48,15 +63,28 @@ class UsersController extends Controller
     }
 
 
+    public function index()
+    {
+        $users = User::paginate(10);
+        //$users = User::all();
+        return view('users.index', compact('users'));
+    }
+
+
 
 
     public function edit(User $user)
     {
+        $this->authorize('update', $user);  //8.3节授权策略在该方法上生效（自己只能编辑自己）
+
         return view('users.edit', compact('user'));
     }
 
     public function update(User $user, Request $request)
     {
+
+        $this->authorize('update', $user);  //8.3节授权策略在该方法上生效（自己只能编辑自己）
+
         $this->validate($request, [
             'name' => 'required|max:50',
             'password' => 'nullable|confirmed|min:6'    //原本这里的nullable是required，如果是required那么下面不需要做一个data数组以及判断，现在允许“为空”，那么下面要做数组和判断。即允许用户只改用户名不改密码，也允许用户只改密码，或者两个都改
@@ -74,6 +102,14 @@ class UsersController extends Controller
         return redirect()->route('users.show', $user);
     }
 
+
+    public function destroy(User $user)
+    {
+        $this->authorize('destroy', $user);     //跟edit、update方法下方第一行一样，需要规定登录的人才能访问该方法（其他附加授权条件见UserPolicy等等）
+        $user->delete();
+        session()->flash('success', '成功删除用户！');
+        return back();
+    }
 
 
 

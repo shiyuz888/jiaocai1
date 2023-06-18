@@ -17,8 +17,10 @@ class RouteServiceProvider extends ServiceProvider
      *
      * @var string
      */
-    public const HOME = '/';    #改动过
+    public const HOME = '/welcome';    #改动过。 可以跟8.3节提到的Middeleware/RedirectIfAuthenticated.php里的注释内容联动
+    //我可以恶搞，原本是在某个条件下会默认返回主页即'/' 而只要把常量HOME的赋值改为欢迎页就能默认返回到欢迎页
 
+    
     protected  $namespace =  'App\\Http\\Controllers';  #3.4节添加
 
     /**

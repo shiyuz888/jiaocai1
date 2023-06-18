@@ -11,6 +11,14 @@ use Illuminate\Support\Facades\Auth; //要添加 ←教材7.2
 class SessionsController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware('guest', [
+            'only' => ['create']
+        ]);
+    }
+
+
 
     public function create()
     {
@@ -29,7 +37,8 @@ class SessionsController extends Controller
         if (Auth::attempt($credentials, $request->has('remember'))) {       //记住我参数remember
             // 登录成功后的相关操作
             session()->flash('success', '欢迎回来！');
-            return redirect()->route('users.show', [Auth::user()]);
+            $fallback = route('users.show', Auth::user());  //8.3节友好的重定向（我个人认为实际现实情况下，不太需要这个功能，因为我记得之前做的时候发现一个不太合理的场景，但是忘记了）
+            return redirect()->intended($fallback);
         } else {
             // 登录失败后的相关操作
             session()->flash('danger', '很抱歉，您的邮箱和密码不匹配');
