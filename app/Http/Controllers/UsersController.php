@@ -165,4 +165,19 @@ class UsersController extends Controller
 
 
 
+    //第11章
+    public function followings(User $user)
+    {
+        $users = $user->followings()->paginate(10);
+        $title = $user->name . '关注的人';
+        return view('users._fans_followings_list', compact('users', 'title'));
+    }
+
+    public function followers(User $user)
+    {
+        $users = $user->followers()->paginate(10);
+        $title = $user->name . '的粉丝';
+        return view('users._fans_followings_list', compact('users', 'title'));
+    }
+
 }

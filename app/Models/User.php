@@ -80,10 +80,53 @@ class User extends Authenticatable
 
     public function feed()
     {
+
+        /*第10章 首页微博feed流的初始方法，只能显示自己的微博
         return $this->mblogs()
                     ->orderBy('created_at', 'desc');
+        */
+
+        // 第11章 优化成显示自己的、和自己关注的人的微博 （但是我看不懂，要参考下教材11.6节的说明）
+        $user_ids = $this->followings->pluck('id')->toArray();
+        array_push($user_ids, $this->id);
+        return Mblog::whereIn('user_id', $user_ids)
+                              ->with('user')
+                              ->orderBy('created_at', 'desc');
     }
 
 
-    
+
+    //第11章
+    //做完followers迁移文件后，到这里来做关注/被关注的多对多关系
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'user_id', 'follower_id');
+    }
+
+    public function followings()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'user_id');
+    }
+
+    public function follow($user_ids)
+    {
+        if ( ! is_array($user_ids)) {
+            $user_ids = compact('user_ids');
+        }
+        $this->followings()->sync($user_ids, false);
+    }
+
+    public function unfollow($user_ids)
+    {
+        if ( ! is_array($user_ids)) {
+            $user_ids = compact('user_ids');
+        }
+        $this->followings()->detach($user_ids);
+    }
+
+    public function isFollowing($user_id)
+    {
+        return $this->followings->contains($user_id);
+    }
+
 }

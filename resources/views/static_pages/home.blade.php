@@ -24,6 +24,10 @@
         <section class="user_info">
           @include('users._show_user_info', ['user' => Auth::user()])
         </section>
+
+        <section class="stats mt-2">
+          @include('users._fans_stats', ['user' => Auth::user()])
+        </section>
       </aside>
     </div>
   @else
