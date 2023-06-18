@@ -72,3 +72,13 @@ Route::get('password/reset',  'PasswordController@resetRequestPage')->name('rese
 Route::post('password/email',  'PasswordController@sendVerifyLinkEmail')->name('sendVerifyLinkEmail');
 Route::get('password/reset/{token}',  'PasswordController@resetPwdForm')->name('resetPwdForm');
 Route::post('password/reset',  'PasswordController@updateNewPwd')->name('updateNewPwd');
+
+
+
+
+Route::resource('mblogs', 'MblogsController', ['only' => ['store', 'destroy']]);    //only也可以不要，你用php artisan route:list可以查看resource方法内涵的具体路由
+// 等价于
+// Route::post('/mblogs', 'MblogsController@store')->name('mblogs.store');
+// Route::delete('/mblogs/{mblog}', 'MblogsController@destroy')->name('mblogs.destroy');
+
+

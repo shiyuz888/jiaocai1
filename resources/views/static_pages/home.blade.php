@@ -5,6 +5,31 @@
 
 @section('content')
 
+@if (Auth::check())
+    <div class="row">
+      <div class="col-md-8">
+        <section class="status_form">
+          @include('users._write_a_mblog')
+        </section>
+
+        <h4>微博列表</h4>
+        <hr>
+        @include('users._show_feedOnHomePage')
+
+      </div>
+
+
+      <!-- 边栏 -->
+      <aside class="col-md-4">
+        <section class="user_info">
+          @include('users._show_user_info', ['user' => Auth::user()])
+        </section>
+      </aside>
+    </div>
+  @else
+
+  <!-- 如果登录就显示上面的↑↑ 如果没登录就显示下面的↓↓ 缩进格式我懒得整理了 -->
+
 
 <div class="bg-light p-3 p-sm-5 rounded">
     <h1>Hello Laravel</h1>
@@ -19,6 +44,7 @@
     </p>
 </div>
 
+@endif
 
 
 @stop

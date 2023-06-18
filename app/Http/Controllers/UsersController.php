@@ -102,9 +102,16 @@ class UsersController extends Controller
 
 
 
+
     public function show(User $user)
     {
-        return view('users.show', compact('user'));
+        //微博显示在用户个人中心的页面里
+        $mblogs = $user->mblogs()
+                        ->orderBy('created_at', 'desc')
+                        ->paginate(10);
+
+        return view('users.show', compact('user', 'mblogs'));
+        // compact 方法可以同时接收多个参数，在上面代码我们将用户数据 $user 和微博动态数据 $mblogs 同时传递给用户个人页面的视图上。
     }
 
 
